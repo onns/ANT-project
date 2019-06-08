@@ -24,6 +24,7 @@
     var option = document.getElementById("options");
     var logInput = document.getElementById("log");
 
+    var status = 0;
     var buffer = null;
     var target = null;
     var url = '';
@@ -31,7 +32,7 @@
     var n = -1;
 
     var Ajax = {
-        get: function (url, fn = null) { 
+        get: function (url, fn = null) {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url, true);
             xhr.onreadystatechange = function () {
@@ -69,6 +70,21 @@
         Ajax.post('../data', 'data=' + data + '&site=' + name)
     }
 
+    function formatDate(now) {
+        now = new Date(now);
+        var year = now.getFullYear();
+        var month = (now.getMonth() + 1 < 10 ? '0' + (now.getMonth() + 1) : now.getMonth() + 1);
+        var date = now.getDate() < 10 ? '0' + now.getDate() : now.getDate();
+        var hour = now.getHours() < 10 ? '0' + now.getHours() : now.getHours();
+        var minute = now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes();
+        var second = now.getSeconds() < 10 ? '0' + now.getSeconds() : now.getSeconds();
+        return year + "-" + month + "-" + date + " " + hour + ":" + minute + ":" + second;
+    }
+
+    function showLog(url, timestamp) {
+        logInput.innerHTML += url + ',' + formatDate(timestamp) + '<br/>'
+    }
+
     function generateUrl() {
         if (n >= urlList.length - 1) {
             return '';
@@ -86,12 +102,17 @@
             timestamp = new Date().getTime();
             EventLoops[options.value].start();
             target = window.open(url, '_blank');
+            // 论文这里有点坑爹，讲的方法并不是用的方法。
+            // var target = window.open();
+            // target.opener = null;
+            // target.location = url;
             setTimeout(function () {
                 buffer = EventLoops[options.value].stop();
                 target.close();
                 if (buffer) {
                     let json = '[' + buffer.slice(0, i) + ']';
                     let name = url + '-' + timestamp;
+                    showLog(url, timestamp);
                     sendData(json, name);
                 } else {
                     alert("err: no trace");
@@ -102,12 +123,22 @@
         }
     }
     function nextStep() {
-        getTrace();
+        if(status == 0) {
+            return;
+        } else {
+            getTrace();
+        }
     }
 
     startBtn.onclick = function () {
-        getTrace();
-
+        if(status == 0) {
+            status = 1;
+            startBtn.innerHTML = 'pause';
+            getTrace();
+        } else {
+            status = 0;
+            startBtn.innerHTML = 'resume';
+        }
     }
 </script>
 
