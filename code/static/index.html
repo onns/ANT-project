@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Loopscan</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="css/monitor.css">
+    <script src="js/data.js"></script>
+    <script src="js/loopscan.js"></script>
+</head>
+
+<body>
+    <select name="target" id="options">
+        <option value="renderer_mt">Renderer's Main Thread (with postMessage)</option>
+        <option value="renderer_mt_timeout">Renderer's Main Thread (with timers)</option>
+        <option value="host_io_net">Host's I/O Thread (with fetch requests)</option>
+        <option value="host_io_sw">Host's I/O Thread (with workers)</option>
+    </select>
+    <button id="start">start</button>
+    <div id="log"></div>
+</body>
+<script>
+    var startBtn = document.getElementById("start");
+    var option = document.getElementById("options");
+    var logInput = document.getElementById("log");
+
+    var buffer = null;
+    var target = null;
+    var url = '';
+    var timestamp = 0;
+    var n = -1;
+
+    var Ajax = {
+        get: function (url, fn = null) { 
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200 || xhr.status == 304) {
+                }
+            };
+            xhr.send();
+        },
+
+        post: function (url, data, fn = null) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && (xhr.status == 200 || xhr.status == 304)) {
+                    nextStep();
+                }
+            };
+            xhr.send(data);
+        }
+    }
+
+    function downloadData(data, name, extension = "json") {
+        let blob = new Blob([data], { type: "application/json" });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = name + "." + extension;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    function sendData(data, name, extension = "json") {
+        Ajax.post('../data', 'data=' + data + '&site=' + name)
+    }
+
+    function generateUrl() {
+        if (n >= urlList.length - 1) {
+            return '';
+        } else {
+            n++;
+            // alert(urlList[n]);
+            return urlList[n];
+        }
+    }
+    function getTrace() {
+
+        url = generateUrl();
+
+        if (url != '') {
+            timestamp = new Date().getTime();
+            EventLoops[options.value].start();
+            target = window.open(url, '_blank');
+            setTimeout(function () {
+                buffer = EventLoops[options.value].stop();
+                target.close();
+                if (buffer) {
+                    let json = '[' + buffer.slice(0, i) + ']';
+                    let name = url + '-' + timestamp;
+                    sendData(json, name);
+                } else {
+                    alert("err: no trace");
+                }
+            }, 5000);
+        } else {
+            alert('done!');
+        }
+    }
+    function nextStep() {
+        getTrace();
+    }
+
+    startBtn.onclick = function () {
+        getTrace();
+
+    }
+</script>
+
+</html>
