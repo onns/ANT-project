@@ -30,6 +30,7 @@
     var url = '';
     var timestamp = 0;
     var n = -1;
+    var timer = null;
 
     var Ajax = {
         get: function (url, fn = null) {
@@ -106,32 +107,40 @@
             // var target = window.open();
             // target.opener = null;
             // target.location = url;
-            setTimeout(function () {
-                buffer = EventLoops[options.value].stop();
-                target.close();
-                if (buffer) {
-                    let json = '[' + buffer.slice(0, i) + ']';
-                    let name = url + '-' + timestamp;
-                    showLog(url, timestamp);
-                    sendData(json, name);
-                } else {
-                    alert("err: no trace");
+            timer = setInterval(function () {
+                console.log(i);
+                if (i >= SZ) {
+                    clearInterval(timer);
+
+                    buffer = EventLoops[options.value].stop();
+                    target.close();
+                    if (buffer) {
+                        let json = '[' + buffer.slice(0, i) + ']';
+                        let name = url + '-' + timestamp;
+                        showLog(url, timestamp);
+                        sendData(json, name);
+                    } else {
+                        alert("err: no trace");
+                    }
                 }
-            }, 5000);
+            }, 500);
+
         } else {
             alert('done!');
         }
     }
     function nextStep() {
-        if(status == 0) {
+        if (status == 0) {
             return;
         } else {
-            getTrace();
+            setTimeout(function () {
+                getTrace();
+            }, 5000);
         }
     }
 
     startBtn.onclick = function () {
-        if(status == 0) {
+        if (status == 0) {
             status = 1;
             startBtn.innerHTML = 'pause';
             getTrace();
