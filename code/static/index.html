@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -16,11 +16,12 @@
         <option value="host_io_net">Host's I/O Thread (with fetch requests)</option>
         <option value="host_io_sw">Host's I/O Thread (with workers)</option>
     </select>
-    <button id="start">start</button>
+    <button id="start">start</button><button id="stop">stop</button>
     <div id="log"></div>
 </body>
 <script>
     var startBtn = document.getElementById("start");
+    var stopBtn = document.getElementById("stop");
     var option = document.getElementById("options");
     var logInput = document.getElementById("log");
 
@@ -30,7 +31,10 @@
     var url = '';
     var timestamp = 0;
     var n = -1;
+    var repeat = 10;
+    var stop = (urlList.length - 1) * repeat;
     var timer = null;
+
 
     var Ajax = {
         get: function (url, fn = null) {
@@ -83,16 +87,16 @@
     }
 
     function showLog(url, timestamp) {
-        logInput.innerHTML += url + ',' + formatDate(timestamp) + '<br/>'
+        logInput.innerHTML += (n + 1) + '. ' + url + ', ' + formatDate(timestamp) + '<br/>'
     }
 
     function generateUrl() {
-        if (n >= urlList.length - 1) {
+        if (n >= stop) {
             return '';
         } else {
             n++;
             // alert(urlList[n]);
-            return urlList[n];
+            return urlList[Math.floor(n / repeat)];
         }
     }
     function getTrace() {
@@ -136,8 +140,9 @@
         } else {
             setTimeout(function () {
                 getTrace();
-            }, 5000);
+            }, 2000);
         }
+        // 等待5s应该是为了传输数据到服务器，这里改为2s
     }
 
     startBtn.onclick = function () {
@@ -149,6 +154,9 @@
             status = 0;
             startBtn.innerHTML = 'resume';
         }
+    }
+    stopBtn.onclick = function() {
+        n = stop;
     }
 </script>
 
