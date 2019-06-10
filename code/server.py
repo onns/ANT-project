@@ -19,7 +19,8 @@ class storeData:
     def POST(self):
         i = web.input(data='', site='')
         # web.debug(i.data)
-        f = open(i.site.replace('/','').replace(':','') + '.json', 'w')
+        f = open('data/' + i.site.replace('/',
+                                          '').replace(':', '') + '.json', 'w')
         f.write(i.data)
         f.close()
         return '{"success":"OK"}'

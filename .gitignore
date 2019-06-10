@@ -2,3 +2,5 @@
 *.json
 writeup/*
 *.pyc
+*.zip
+*.txt

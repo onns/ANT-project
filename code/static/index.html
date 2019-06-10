@@ -108,7 +108,7 @@
             // target.opener = null;
             // target.location = url;
             timer = setInterval(function () {
-                console.log(i);
+                // console.log(i);
                 if (i >= SZ) {
                     clearInterval(timer);
 
@@ -127,6 +127,7 @@
 
         } else {
             alert('done!');
+            downloadData(logInput.innerHTML.replace(/<br>/g, "\n"), 'logfile-' + new Date().getTime(), 'txt');
         }
     }
     function nextStep() {
