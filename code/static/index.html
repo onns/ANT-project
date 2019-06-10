@@ -120,7 +120,8 @@
                     target.close();
                     if (buffer) {
                         let json = '[' + buffer.slice(0, i) + ']';
-                        let name = url + '-' + timestamp;
+                        // let name = url + '-' + timestamp;
+                        let name = url + '_' + (n % repeat);
                         showLog(url, timestamp);
                         sendData(json, name);
                     } else {
@@ -155,7 +156,7 @@
             startBtn.innerHTML = 'resume';
         }
     }
-    stopBtn.onclick = function() {
+    stopBtn.onclick = function () {
         n = stop;
     }
 </script>
