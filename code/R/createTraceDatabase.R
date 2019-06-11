@@ -15,8 +15,8 @@ createTraceDatabase <- function(inPath, outPath, maxLength = 4000) {
     dbs <- list()
 
     tmp <- list.files(inPath, pattern = "_[0-9]+\\.json$")[1]
-    pattern <- stringr::str_replace(tmp, "_[0-9]+\\.json$", "")
-    tmp <- list.files(inPath, pattern = pattern)
+    pattern_r <- stringr::str_replace(tmp, "_[0-9]+\\.json$", "")
+    tmp <- list.files(inPath, pattern = pattern_r)
     sets <- stringr::str_match(tmp, "_([0-9]+)\\.json")[,2]
 
     # Iterate over one set of traces
@@ -43,10 +43,17 @@ createTraceDatabase <- function(inPath, outPath, maxLength = 4000) {
 
             # Relative duration and cut to maxLength
             tmp <- tmp - tmp[1]
-            tmp <- tmp[tmp < maxLength]
+            tmp <- tmp[tmp < maxLength]   #取前4000个数据
 
             # Add to db
-            parseTrace(tmp)
+            data <- data.frame(timestamp=tmp, delay=NA)
+            data$delay <- c(data[2:nrow(data),"timestamp"] - data[1:nrow(data)-1,"timestamp"], NA)  #求delay
+            data <- data[1:nrow(data)-1,] # remove last NA
+            
+            # Calc Q3, filter values smaller (reduces size)
+            threshold <- summary(data$delay)[5]
+            data <- data[data$delay > threshold,]  #筛去delay小于阈值的数据
+            return(data)
 
         }
 
@@ -75,7 +82,5 @@ createTraceDatabase <- function(inPath, outPath, maxLength = 4000) {
 #' loadTraceDatabase("traces/traces_5_4000.dat")
 
 loadTraceDatabase <- function(path) {
-
     return(readRDS(file=path))
-
 }

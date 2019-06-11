@@ -1,4 +1,4 @@
-#' generateTuningDatabases
+#' executeTuning
 #'
 #' Creates databases of timeseries for all combinations of parameters
 #' @param inPath Path with databases of timeseries.
@@ -9,10 +9,10 @@
 #' executeTuning("dbs/")
 
 executeTuning <- function(inPath, logFile=NA) {
-
+    sink()
     # Copy all output into a log file
-    if (!is.na(logFile)) {
-        sink(logFile, split = TRUE) 
+    if (!is.na(logFile)) {  #log文件非缺失
+        sink(logFile, split = TRUE) #内容输出到文件
     }
 
     # Build table of results
@@ -35,12 +35,13 @@ executeTuning <- function(inPath, logFile=NA) {
         db <- readRDS(paste(inPath, dbname, sep=""))
 
         # Set all DTW parameters for tuning
-		pWindowTypes <- c("itakura", "sakoechiba")
-		pStepPatterns <- c("symmetric1", "symmetric2", "asymmetric")
-		pWindowSizes <- c(1, 5, 10, 30, 50, 100)
+        pWindowTypes <- c("itakura", "sakoechiba")
+        pStepPatterns <- c("symmetric1", "symmetric2", "asymmetric")
+        pWindowSizes <- c(1, 5, 10, 30, 50, 100)
         dtwParameters <- as.data.frame(expand.grid(windowType=pWindowTypes,
                                                    stepPattern=pStepPatterns,
                                                    windowSize=pWindowSizes))
+
         # Remove invalid ones (itakura window sizes)
         dtwParameters <- dtwParameters[-which(dtwParameters$windowType == "itakura" 
                                               & dtwParameters$windowSize != 1),]
@@ -56,7 +57,7 @@ executeTuning <- function(inPath, logFile=NA) {
             # Print parameters 
             print(paste("Conf:", printConfigData(conf)))
 
-            # Calculates rounds of DTW with given config
+            # Calculates rounds of DTW with given config,应用DTW方法
             perf <- calculatePerformance(db, conf, 3, paste(inPath, "crossMatrices/", sep=""))
 
             # Store results 
@@ -67,13 +68,13 @@ executeTuning <- function(inPath, logFile=NA) {
             } 
             
             # Print perforamnce
-            print(paste("Performance: ", paste(perf, collapse=" ")))
+            print(paste("Conf:", printConfigData(conf), "Performance: ", paste(perf, collapse=" ")))
             print("=============")
 
         }
 
     }
-
+    write.table(results,"resultsTuning.csv",row.names=FALSE,col.names=TRUE,sep=",")
     return(results)
 
 }

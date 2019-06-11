@@ -24,7 +24,7 @@ runCrossValidation <- function(inPath,
                                P = c(1, 2, 5, 10, 20, 50),
                                maxLength = c(1000, 2000, 3000, 4000),
                                sampFun = c('sum', 'max'),
-                               N, m,
+                               N=3, m=2,
                                logFile = NA){
   
   results <- data.frame(maxLength = NULL, P = NULL, sampFun = NULL, windowType = NULL, stepPattern = NULL,
@@ -48,6 +48,7 @@ runCrossValidation <- function(inPath,
                                            rate = perf[tol]))
     }
   }
+  write.table(results,"resultsCrossValidation.csv",row.names=FALSE,col.names=TRUE,sep=",")
   return(results)
 }
 

@@ -18,5 +18,4 @@ parseTrace <- function(trace) {
     data <- data[data$delay > threshold,]
 
     return(data)
-
 }

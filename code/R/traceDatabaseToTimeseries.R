@@ -19,28 +19,29 @@ traceDatabaseToTimeseries <- function(traceDatabase, P = 20, samplingFun = sum, 
 
         print(paste("Loading trace from", t))
         trace <- loadTraceDatabase(t)
-        
         # Register parallel support
         doParallel::registerDoParallel(cores=parallel::detectCores())
 
         tmp <- foreach::foreach(tr=trace, .inorder=TRUE) %dopar% {
 
           # Add timeseries to db
-          if (nrow(tr)>0){  
-            traceToTimeseries(tr, P=P, samplingFun=samplingFun)
+          if (nrow(tr)>0){
+              tr$slot <- floor(tr[,"timestamp"]/P) #舍入函数
+              temp <- aggregate(tr$delay, by=list(unique.values=tr$slot), FUN=samplingFun)  #对组内delay进行求和
+              if(length(temp$x)>0){
+                  return(ts(temp$x))  #将数据转化为时间序列数据
+              }
           }
         }
 
         # Unregister parallel support
         doParallel::stopImplicitCluster()
-
+        
         names(tmp) <- names(trace)
-
         # Append lists of timeseries
         db <- c(db, tmp)
 
     }
-
 
     if (!is.na(output)) {
         print("Storing db...")
