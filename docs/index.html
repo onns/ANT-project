@@ -48,25 +48,32 @@
 						3. 实现方法
 						4. 实验
 						5. 结果分析
+						6. 总结
 					</textarea>
 				</section>
 			</section>
 			<section>
 				<section data-markdown>
 					<textarea data-template>
-						### 背景
-						事件驱动编程(EDP)在服务器端和网络编程中越来越重要。
-						EDP的核心组件是事件循环，它充当FIFO队列，进程使用它来存储和分派从其他进程接收到的消息。
-						但是共享事件循环容易受到侧通道攻击。
-						EDP：为需要处理的事件编写相应的事件处理程序
-						事件循环：是指主线程重复从消息队列中取消息、执行的过程
+### 背景
+
+事件驱动编程(EDP)在服务器端和网络编程中越来越重要。
+
+EDP的核心组件是事件循环，它充当FIFO队列，进程使用它来存储和分派从其他进程接收到的消息。
+但是共享事件循环容易受到侧通道攻击。
+
+EDP：为需要处理的事件编写相应的事件处理程序
+
+事件循环：是指主线程重复从消息队列中取消息、执行的过程
 					</textarea>
 				</section>
 				<section data-markdown>
 					<textarea data-template>
-						### 背景
-						在EDP中，每个程序都有一个事件循环，它由一个FIFO队列和一个监听事件的控制进程(或线程)组成。到达的事件被推入队列，并由控制进程根据FIFO策略按顺序分派。
-						本文证明了基于EDP的系统易受边信道攻击的影响。关键的观察是，事件循环形成了一个可以在相互不信任的程序之间共享的资源。因此，一个程序对这个资源的争用可以被其他程序通过控制进程调度它们的事件所花费的时间的变化来观察。
+### 背景
+
+在EDP中，每个程序都有一个事件循环，它由一个FIFO队列和一个监听事件的控制进程(或线程)组成。到达的事件被推入队列，并由控制进程根据FIFO策略按顺序分派。
+
+本文证明了基于EDP的系统易受边信道攻击的影响。关键的观察是，事件循环形成了一个可以在相互不信任的程序之间共享的资源。因此，一个程序对这个资源的争用可以被其他程序通过控制进程调度它们的事件所花费的时间的变化来观察。
 					</textarea>
 				</section>
 				<section data-markdown>
@@ -81,10 +88,13 @@
 			<section>
 				<section data-markdown>
 					<textarea data-template>
-							### 原理
-							同源策略(SOP)是web安全模型中的一个核心概念:
-	策略限制web页面上的脚本访问来自另一个页面的数据(如果它们的起源不同)。如果协议、端口和主机相等，则两个页面具有相同的起源。
-	而对跨源通信的需求触发了一些特性的引入，比如postMessage API、跨源资源共享(CORS)、通道消息传递、Fetch API等。
+### 原理
+
+同源策略(SOP)是web安全模型中的一个核心概念:
+
+策略限制web页面上的脚本访问来自另一个页面的数据(如果它们的起源不同)。如果协议、端口和主机相等，则两个页面具有相同的起源。
+
+而对跨源通信的需求触发了一些特性的引入，比如postMessage API、跨源资源共享(CORS)、通道消息传递、Fetch API等。
 
 						</textarea>
 				</section>
@@ -103,11 +113,15 @@
 				</section>
 				<section data-markdown>
 					<textarea data-template>
-							### 原理
-							Chrome支持不同的策略来控制如何将web应用程序映射到渲染器进程，以及是否共享事件循环。
-	默认策略是process-per-siteinstance，它需要为站点的每个实例使用单独的渲染器进程。
-	站点实例是指来自同一站点的页面的集合，这些页面之间可以相互获取引用。比如一个页面使用Javascript在一个新窗口中打开另一个页面。
-	在默认策略中，一些特殊情况下会使Chrome在相同的渲染器进程中托管来自不同站点的文档，从而使得它们共享事件循环。
+### 原理
+
+Chrome支持不同的策略来控制如何将web应用程序映射到渲染器进程，以及是否共享事件循环。
+
+默认策略是process-per-siteinstance，它需要为站点的每个实例使用单独的渲染器进程。
+
+站点实例是指来自同一站点的页面的集合，这些页面之间可以相互获取引用。比如一个页面使用Javascript在一个新窗口中打开另一个页面。
+
+在默认策略中，一些特殊情况下会使Chrome在相同的渲染器进程中托管来自不同站点的文档，从而使得它们共享事件循环。
 
 						</textarea>
 				</section>
@@ -127,39 +141,105 @@
 							</textarea>
 				</section>
 				<section>
-					<pre><code class="hljs" data-trim data-line-numbers="1-5">
-							function loop() {
-								save(performance.now())
-								self.postMessage(0,'*')
-							}
-							self.onmessage = loop 6 loop()
-							</code></pre>
+					<pre><code class="hljs" >
+		function loop() {
+			save(performance.now())
+			self.postMessage(0,'*')
+		}
+		self.onmessage = loop 
+		loop()
+					</code></pre>
 
 					以上为使用postMessage API监视主线程的事件循环的JS代码。
 				</section>
 				<section data-markdown>
 					<textarea data-template>
-								### 实现方法
-								干扰因素：
-	底层硬件平台和操作系统的明显影响；
-	除此之外还包括Just-in-time compilation (JIT)、Garbage collection (GC)等因素。
+### 实现方法
 
-	这些因素会降低我们的攻击效率。
-	但是可观察的GC和JIT事件可以分别显示关于程序内存和代码使用模式的信息。
+干扰因素：
+底层硬件平台和操作系统的明显影响；
+除此之外还包括Just-in-time compilation (JIT)、Garbage collection (GC)等因素。
+
+这些因素会降低我们的攻击效率。
+但是可观察的GC和JIT事件可以分别显示关于程序内存和代码使用模式的信息。
 
 	
 							</textarea>
 				</section>
 				<section data-markdown>
 					<textarea data-template>
-									### 实现方法
-									LoopScan Tool：
-	在该工具中实现了前面描述的窃听技术。
-	它是基于一个简单的HTML页面，监视主进程和渲染器进程的事件循环。
+### 实现方法
+LoopScan Tool：
+在该工具中实现了前面描述的窃听技术。
+它是基于一个简单的HTML页面，监视主进程和渲染器进程的事件循环。
 
 	
 		
 								</textarea>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+### 实验
+页面识别攻击：
+通过监视事件循环获得的事件延迟跟踪来识别加载在其他选项卡中的web页面。
+
+样本选择：
+我们选择了Alexa中流量数据排名前200的站点，并且去掉了重复的站点。
+
+
+						</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+### 获取数据
+
+1. 打开一个URL站点
+2. 监视事件循环，直到跟踪缓冲区满
+3. 关闭页面，将数据保存到本地
+4. 等待5S，使用下一个URL转到步骤1
+
+我们用两个选项卡在Chrome实例上测量时间；
+一个用于间谍进程，另一个用于目标URL页面
+
+
+						</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+### 数据处理
+
+![](Picture2.png)
+
+						</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+### 数据处理
+
+动态时间扭曲（DTW）是维护关于观察到的事件的时间信息。但是事件发生的确切时刻容易受到环境噪声的影响。网络延迟将影响网络请求的持续时间，从而影响事件到达事件循环。因此，关注事件的相对顺序并将其作为页面标识的的特性效果更佳。
+
+事件延迟直方图是将观察到的事件延迟聚集在k个中心附近，并将每个跟踪转换为表示每个k类中事件数量的直方图。然后利用欧氏距离作为k维签名的相似性度量。
+
+							</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+### 动态时间扭曲
+
+DTW广泛用于对时间序列进行分类，即在连续时间点和等间隔时间点上获取的数据点序列。
+
+DTW表示距离的概念，它将形状相似但速度不同的紧密时间相关数据视为距离，即DTW对水平压缩和拉伸具有很强的鲁棒性。
+	
+					</textarea>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+### 总结
+					</textarea>
 				</section>
 			</section>
 		</div>
