@@ -1,7 +1,7 @@
 // Global state vars
 var i, buffer, _auxWorker, _auxCb, _auxTimer;
 
-const SZ = 4100; // Pre-allocated elements
+const SZ = 200000; // Pre-allocated elements
 
 function save(t) {
     if (i < buffer.length) buffer[i++] = t;
