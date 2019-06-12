@@ -40,11 +40,11 @@ createTraceDatabase <- function(inPath, outPath, maxLength = 4000) {
 
             # Read raw JSON file
             tmp <- jsonlite::fromJSON(paste(inPath,f,sep=""))
-
+            browser()
             # Relative duration and cut to maxLength
             tmp <- tmp - tmp[1]
-            tmp <- tmp[tmp < maxLength]   #取前4000个数据
-
+            tmp <- tmp[tmp < maxLength]
+            browser()
             # Add to db
             data <- data.frame(timestamp=tmp, delay=NA)
             data$delay <- c(data[2:nrow(data),"timestamp"] - data[1:nrow(data)-1,"timestamp"], NA)  #求delay
