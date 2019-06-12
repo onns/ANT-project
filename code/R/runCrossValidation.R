@@ -80,7 +80,9 @@ executeCrossValidation <- function(inPath, conf, N, m, logFile=NA) {
      
         # Extract db parameters
         tsParameters <- parseDatabaseFilename(dbname)
-
+        conf$P <- tsParameters$P
+        conf$maxLength <- tsParameters$maxLength
+        conf$sampFun <- tsParameters$sampFun
         # Load db
         print(paste("Loading ", inPath, dbname, sep=""), quote = F)
         db <- readRDS(paste(inPath, dbname, sep=""))
@@ -176,7 +178,6 @@ calculatePerformanceCross <- function(db, conf, N=10, m=3, keepMatrices=NA) {
 
           # Compute cross DTW matrix for each configuration and pair of test/ref
           crossDTWmatrix <- dtwDistParallel(test, ref, conf, paste(r,t,sep="-"), output=keepMatrices)
-
           # Calculate matching rate 
           performance[k,] <- performance[k,] + recognitionRate(crossDTWmatrix)
         }
