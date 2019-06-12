@@ -43,19 +43,18 @@
 			<section>
 				<section data-markdown>
 					<textarea data-template>
-						1. 背景
-						2. 原理
-						3. 实现方法
-						4. 实验
-						5. 结果分析
-						6. 总结
+						1. 实验背景
+						2. 实验原理
+						3. 实验方法
+						4. 实验过程
+						6. 实验总结
 					</textarea>
 				</section>
 			</section>
 			<section>
 				<section data-markdown>
 					<textarea data-template>
-### 背景
+### 实验背景
 
 事件驱动编程(EDP)在服务器端和网络编程中越来越重要。
 
@@ -69,7 +68,7 @@ EDP：为需要处理的事件编写相应的事件处理程序
 				</section>
 				<section data-markdown>
 					<textarea data-template>
-### 背景
+### 实验背景
 
 在EDP中，每个程序都有一个事件循环，它由一个FIFO队列和一个监听事件的控制进程(或线程)组成。到达的事件被推入队列，并由控制进程根据FIFO策略按顺序分派。
 
@@ -88,7 +87,7 @@ EDP：为需要处理的事件编写相应的事件处理程序
 			<section>
 				<section data-markdown>
 					<textarea data-template>
-### 原理
+### 实验原理
 
 同源策略(SOP)是web安全模型中的一个核心概念:
 
@@ -100,7 +99,7 @@ EDP：为需要处理的事件编写相应的事件处理程序
 				</section>
 				<section data-markdown>
 					<textarea data-template>
-							### 原理
+							### 实验原理
 							Chrome Web浏览器依赖于两个进程。
 
 							主进程：运行顶级浏览器窗口。它可以访问系统资源，如网络、文件系统、UI事件等，它代表无特权的渲染器进程管理这些资源。主进程中运行多个线程。
@@ -113,7 +112,7 @@ EDP：为需要处理的事件编写相应的事件处理程序
 				</section>
 				<section data-markdown>
 					<textarea data-template>
-### 原理
+### 实验原理
 
 Chrome支持不同的策略来控制如何将web应用程序映射到渲染器进程，以及是否共享事件循环。
 
@@ -129,7 +128,7 @@ Chrome支持不同的策略来控制如何将web应用程序映射到渲染器�
 			<section>
 				<section data-markdown>
 					<textarea data-template>
-### 实现方法
+### 实验方法
 有几种场景下，敌对站点A可以与受害者站点v共享渲染器进程主线程的事件循环。
 例如恶意广告、键盘记录器等。
 
@@ -154,7 +153,7 @@ Chrome支持不同的策略来控制如何将web应用程序映射到渲染器�
 				</section>
 				<section data-markdown>
 					<textarea data-template>
-### 实现方法
+### 实验方法
 
 干扰因素：
 底层硬件平台和操作系统的明显影响；
@@ -168,7 +167,7 @@ Chrome支持不同的策略来控制如何将web应用程序映射到渲染器�
 				</section>
 				<section data-markdown>
 					<textarea data-template>
-### 实现方法
+### 实验方法
 LoopScan Tool：
 在该工具中实现了前面描述的窃听技术。
 它是基于一个简单的HTML页面，监视主进程和渲染器进程的事件循环。
@@ -181,7 +180,7 @@ LoopScan Tool：
 			<section>
 				<section data-markdown>
 					<textarea data-template>
-### 实验
+### 实验过程
 页面识别攻击：
 通过监视事件循环获得的事件延迟跟踪来识别加载在其他选项卡中的web页面。
 
@@ -204,6 +203,11 @@ LoopScan Tool：
 一个用于间谍进程，另一个用于目标URL页面
 
 
+						</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+![](Picture3.jpg)
 						</textarea>
 				</section>
 				<section data-markdown>
@@ -234,13 +238,52 @@ DTW表示距离的概念，它将形状相似但速度不同的紧密时间相�
 	
 					</textarea>
 				</section>
+				<section data-markdown>
+					<textarea data-template>
+### 判别依据
+
+![](Picture4.png)
+
+						</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+![](Picture5.png)
+Machine_1: windows 8.1 professional 64 bit Inter(R) Core(TM) i7-4790K CPU @4.00GHz with 32GB of RAM, and Chrome v75
+
+Machine_2: windows 10 professional 64 bit Inter(R) Core(TM) i5-7500 CPU @3.4GHz with 8GB of RAM, and Chrome v69
+
+						</textarea>
+				</section>
 			</section>
 			<section>
 				<section data-markdown>
 					<textarea data-template>
-### 总结
+### 实验总结
+
+1. 相对于随机猜测概率来说，识别率有着一定程度的提升，特别是使用最佳匹配的情况下，但识别率还是太低。可能是这样通过时间延迟来提取的特征包含太多噪声（论文数据处理没有任何去噪操作），没办法有效识别网页。
+2. 我们得出的识别率相对于原文给出的识别率低了很多，是否是操作系统的原因？我们使用的均是windows系统，原文使用了Debian以及OSX系统。
+3. 该方法受运行环境的影响很大，我们在不同机器不同浏览器版本上跑的数据，其识别率相差一个数量级。
+4. 对数据没有进行任何去噪操作；
+5. 最后的识别是取前n个参考网址，未考虑具体的相似值，假如最相似的网址，其相似值特别小，那么是否可以认为是同一个网页？
+
+						</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+### 实验总结
+
+* 缓存可能会对实验过程中得到的结果产生影响。
+* 有cookie信息的页面（登录账户后的页面和未登录账户页面）也具有差异，增加了识别难度。
+* 不同时期同一个网页的曲线差异过大
+	* 最近京东天猫都在各个网站投放6.18大促的广告。
+	* 新闻类网站，直播类网站的页面不是一成不变的。
+* 网站会识别agent信息判断客户端类型（Window Mac Linux），针对不同版本的网站曲线也会不同。
+* 大多数情况下，用户的浏览器窗口都不止一两个，由于事件进程是共享的，多个网页的叠加效果需要更加复杂的模型和大量的数据去分辨。
+
 					</textarea>
 				</section>
+
 			</section>
 		</div>
 	</div>
